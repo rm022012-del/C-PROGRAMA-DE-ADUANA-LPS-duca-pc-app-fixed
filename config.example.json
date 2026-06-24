@@ -1,0 +1,21 @@
+{
+  "dry_run": true,
+  "audit_log_path": "logs/permission_audit.csv",
+  "folders": [
+    {
+      "name": "Carpeta de ejemplo",
+      "folder_id": "REEMPLAZAR_CON_ID_DE_CARPETA_GOOGLE_DRIVE",
+      "target_role": "writer",
+      "authorized_principals": [
+        {
+          "type": "user",
+          "emailAddress": "usuario@empresa.com"
+        },
+        {
+          "type": "group",
+          "emailAddress": "grupo@empresa.com"
+        }
+      ]
+    }
+  ]
+}
