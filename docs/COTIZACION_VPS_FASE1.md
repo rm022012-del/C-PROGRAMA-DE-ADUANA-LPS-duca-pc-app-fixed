@@ -1,79 +1,102 @@
-# Cotizacion VPS - Fase 1 servidor central de correlativos
+# Cotización y plan de puesta en marcha - VPS Fase 1
 
-Fecha de elaboracion: 2026-06-24
+Fecha de preparación: 2026-06-24
+Proyecto: LPS DUCA - servidor central de correlativos
 Repositorio: `rm022012-del/C-PROGRAMA-DE-ADUANA-LPS-duca-pc-app-fixed`
 
-## 1. Objetivo de la Fase 1
+## 1. Objetivo ejecutivo
 
-Implementar un servidor central pequeno y siempre disponible para reservar correlativos de OT, evitando que dos PC tomen el mismo numero cuando trabajan de forma simultanea o cuando existen retrasos de sincronizacion en Google Drive.
+Implementar un servidor central de numeración para eliminar el riesgo de que dos estaciones de trabajo reserven el mismo número de OT.
 
-El servidor no reemplaza Google Drive ni el programa actual. Su funcion principal es actuar como fuente central de numeracion.
+La solución actual del guardián corrige bloqueos operativos de Google Drive y protege archivos locales críticos, pero no sustituye un control transaccional centralizado de correlativos.
 
-## 2. Hallazgo operativo base
+## 2. Requerimiento mínimo
 
-El guardian de arranque ayuda a contener bloqueos de Drive y restaurar archivos criticos, pero no puede garantizar por si solo numeracion unica cuando varias PC trabajan sin red o con sincronizacion tardia. Para eliminar ese riesgo se requiere un servicio central con base de datos y control transaccional.
+El servicio de correlativos no requiere un servidor grande. Requiere estabilidad, disponibilidad y baja latencia razonable hacia El Salvador.
 
-## 3. Requerimiento minimo del VPS
+Requerimiento técnico mínimo recomendado:
 
-Para la Fase 1 no se necesita un servidor potente. El servicio esperado maneja pocas solicitudes por minuto.
+| Componente | Recomendación |
+|---|---|
+| Sistema operativo | Ubuntu LTS o Debian stable |
+| CPU | 1 a 2 vCPU |
+| RAM | 2 GB mínimo; 4 GB recomendado |
+| Disco | SSD/NVMe, 25 GB o más |
+| Base de datos | PostgreSQL |
+| Exposición pública | API HTTPS |
+| Seguridad | Firewall, SSH con llave, token/JWT, HTTPS obligatorio |
+| Backups | Automáticos, mínimo semanal; ideal diario |
 
-Configuracion minima recomendada:
+## 3. Proveedor recomendado con tarifa verificada
 
-- Linux Ubuntu LTS.
-- 1 vCPU y 1-2 GB RAM como base aceptable.
-- 2 vCPU y 4 GB RAM como opcion conservadora.
-- PostgreSQL.
-- API HTTPS.
-- Firewall activo.
-- Respaldos automaticos.
-- Monitoreo basico de disponibilidad.
+### Opción A - DigitalOcean
 
-## 4. Proveedor recomendado con precio confirmado
+Fuente oficial consultada: `https://www.digitalocean.com/pricing/droplets`
 
-### DigitalOcean
+DigitalOcean publica que sus Basic Droplets incluyen los siguientes planes relevantes:
 
-Opcion confirmada oficialmente al 2026-06-24:
+| Plan | Recursos | Precio mensual publicado |
+|---|---:|---:|
+| Basic | 1 vCPU, 2 GiB RAM, 50 GiB SSD | USD 12/mes |
+| Basic | 2 vCPU, 2 GiB RAM, 60 GiB SSD | USD 18/mes |
+| Basic | 2 vCPU, 4 GiB RAM, 80 GiB SSD | USD 24/mes |
 
-- Droplet Basic 2 vCPU / 4 GiB RAM / 80 GiB SSD: USD 24.00 por mes.
-- Droplet Basic 1 vCPU / 2 GiB RAM / 50 GiB SSD: USD 12.00 por mes.
-- Backups: DigitalOcean indica backups porcentuales de 20% semanal o 30% diario sobre el costo del Droplet.
+La misma fuente oficial indica que los backups de Droplets pueden contratarse como porcentaje del costo del Droplet: 20% semanal o 30% diario.
 
-Estimacion operacional:
+Cálculo estimado para producción mínima:
 
-| Escenario | Compute | Backup semanal 20% | Total estimado mensual |
-|---|---:|---:|---:|
-| Minimo viable 1 vCPU / 2 GiB | USD 12.00 | USD 2.40 | USD 14.40 |
-| Conservador 2 vCPU / 4 GiB | USD 24.00 | USD 4.80 | USD 28.80 |
+| Concepto | Cálculo | Total |
+|---|---:|---:|
+| Droplet 2 vCPU / 4 GiB | USD 24.00 | USD 24.00 |
+| Backup semanal 20% | 24.00 x 0.20 | USD 4.80 |
+| Subtotal técnico mensual | 24.00 + 4.80 | USD 28.80 |
+| Dominio / DNS | Variable según proveedor | No incluido |
 
-No incluye dominio, impuestos, servicios administrados adicionales ni soporte externo del programador.
+Costo técnico mensual estimado con DigitalOcean: **USD 28.80/mes**, sin incluir dominio ni impuestos aplicables.
 
-## 5. Vultr
+Para una prueba de banco o piloto, puede arrancarse con el plan de 1 vCPU / 2 GiB por USD 12/mes, más backup semanal estimado en USD 2.40, total técnico aproximado: **USD 14.40/mes**.
 
-Vultr puede ser una alternativa valida por ubicaciones cercanas a Centroamerica, como Miami o Ciudad de Mexico, pero no se deja precio cerrado en este documento porque no fue posible confirmar la tarifa oficial desde la pagina de precios al momento de elaborar este archivo. La consulta a la pagina oficial devolvio error de acceso. Debe verificarse directamente en la consola o pagina oficial de Vultr antes de contratar.
+## 4. Proveedor alternativo pendiente de confirmación directa
 
-## 6. Comparacion contra ampliar Google Workspace
+### Opción B - Vultr
 
-Ampliar Google Workspace puede mejorar almacenamiento, administracion o funciones de colaboracion, pero no resuelve por si mismo la asignacion atomica de correlativos. La numeracion unica requiere un punto central transaccional.
+Vultr es una alternativa razonable por cercanía de regiones como Miami y Ciudad de México; sin embargo, al preparar este documento no se pudo confirmar de forma directa y verificable la tarifa oficial desde la página de precios de Vultr, porque la consulta automatizada recibió bloqueo/error de acceso.
 
-Google Workspace Business Standard informa 2 TB de almacenamiento por usuario en su pagina oficial de precios regional. Ese beneficio no sustituye una API central de correlativos.
+Por precisión documental, no se deja un precio de Vultr como tarifa confirmada. La recomendación es que el programador o el responsable de compra valide manualmente en la consola o sitio oficial de Vultr antes de contratar.
 
-## 7. Arquitectura de Fase 1
+Criterio de selección si se usa Vultr:
+
+1. Región: Miami o Ciudad de México, si está disponible en la cuenta.
+2. Tamaño: 1-2 vCPU, 2-4 GB RAM.
+3. Disco: SSD/NVMe.
+4. Backup automático activado.
+5. IPv4 pública y firewall habilitado.
+
+## 5. Comparación ejecutiva contra ampliar Google Workspace
+
+El problema de fondo no es almacenamiento ni permiso de edición de carpetas. El problema de fondo es concurrencia: dos PC pueden intentar tomar el mismo correlativo si no existe un punto central transaccional.
+
+Por esa razón, aumentar el plan de Google Workspace por usuario no resuelve el control de correlativos. Un VPS central sí ataca directamente el riesgo.
+
+Conclusión financiera: conviene pagar un servidor pequeño mensual para todo el sistema, no una mejora de plan por cada usuario o PC cuando el objetivo es numeración centralizada.
+
+## 6. Arquitectura propuesta
 
 ```text
-PC con LPS DUCA
+PC LPS DUCA
    |
    | POST /api/correlativos/ot/reservar
    v
 API HTTPS en VPS
    |
    v
-PostgreSQL con secuencia unica de OT
+PostgreSQL
    |
    v
-Respuesta: numero OT reservado
+Secuencia transaccional de OT + bitácora de reserva
 ```
 
-## 8. Endpoint requerido
+## 7. Endpoint mínimo requerido
 
 ### `POST /api/correlativos/ot/reservar`
 
@@ -81,8 +104,10 @@ Entrada sugerida:
 
 ```json
 {
-  "terminal_id": "PC-STANLEY-01",
+  "empresa": "LPS",
+  "tipo": "OT",
   "usuario": "stanley",
+  "equipo": "PC-STANLEY",
   "idempotency_key": "uuid-generado-por-la-pc"
 }
 ```
@@ -92,57 +117,120 @@ Respuesta sugerida:
 ```json
 {
   "ok": true,
-  "numero_ot": 2620902395,
-  "reservado_en": "2026-06-24T00:00:00Z"
+  "correlativo": 2620902395,
+  "serie": "OT",
+  "reservado_en": "2026-06-24T20:00:00-06:00"
 }
 ```
 
-## 9. Controles obligatorios
+Reglas obligatorias:
 
-- HTTPS obligatorio.
-- JWT o token de servicio por PC.
-- Idempotencia para evitar doble reserva si una PC reintenta por falla de red.
-- Secuencia transaccional en PostgreSQL.
-- Bitacora de cada reserva.
-- Respaldo diario de base de datos.
-- Monitoreo basico.
-- Plan de reversa documentado.
+1. La reserva debe ser transaccional.
+2. La secuencia debe vivir en base de datos, no en archivo plano.
+3. La `idempotency_key` debe evitar doble reserva si una PC reintenta por timeout.
+4. Toda reserva debe quedar auditada.
+5. El endpoint debe rechazar solicitudes sin token válido.
 
-## 10. Si una PC trabaja sin internet
+## 8. Base de datos sugerida
 
-Se recomienda implementar rangos pre-reservados pequenos por equipo, por ejemplo 5 o 10 correlativos. La PC solo debe consumir numeros previamente asignados por el servidor. Cuando regresa internet, reporta consumo y solicita nuevo bloque.
+Tabla `ot_correlativo_reservas`:
 
-Esto evita que una PC invente numeros localmente.
+```sql
+CREATE TABLE ot_correlativo_reservas (
+    id BIGSERIAL PRIMARY KEY,
+    correlativo BIGINT NOT NULL UNIQUE,
+    empresa TEXT NOT NULL,
+    tipo TEXT NOT NULL DEFAULT 'OT',
+    usuario TEXT NOT NULL,
+    equipo TEXT NOT NULL,
+    idempotency_key UUID NOT NULL UNIQUE,
+    reservado_en TIMESTAMPTZ NOT NULL DEFAULT now(),
+    usado BOOLEAN NOT NULL DEFAULT false,
+    usado_en TIMESTAMPTZ NULL
+);
+```
 
-## 11. Pruebas de aceptacion
+Secuencia sugerida:
 
-1. Dos PC solicitan numero al mismo tiempo y reciben correlativos distintos.
-2. Una PC reintenta la misma solicitud con igual `idempotency_key` y recibe el mismo numero, no uno nuevo.
-3. El servidor registra usuario, PC, fecha y numero asignado.
-4. Si PostgreSQL no responde, la API devuelve error controlado.
-5. Si el token es invalido, la API rechaza la solicitud.
-6. La base puede restaurarse desde respaldo.
-7. El programa actual puede seguir trabajando con modo anterior si se activa reversa de emergencia.
+```sql
+CREATE SEQUENCE ot_correlativo_seq START WITH 2620902395;
+```
 
-## 12. Recomendacion ejecutiva
+El número inicial debe confirmarse antes de producción contra el último correlativo real existente.
 
-Para iniciar, contratar DigitalOcean Basic 1 vCPU / 2 GiB si se quiere minimizar costo o 2 vCPU / 4 GiB si se desea margen operativo. En ambos casos, activar backup semanal como minimo.
+## 9. Rangos pre-reservados para contingencia sin Internet
 
-La decision recomendada para Fase 1 es DigitalOcean por precio oficial confirmado y suficiente capacidad para el volumen esperado.
+Para evitar parálisis cuando una PC se quede sin Internet, puede implementarse un rango local pre-reservado por equipo.
 
-## 13. Pendientes de infraestructura
+Ejemplo operativo:
 
-- Elegir proveedor definitivo.
-- Crear cuenta del proveedor.
-- Registrar metodo de pago.
-- Definir dominio o subdominio para HTTPS.
-- Provisionar VPS.
-- Instalar PostgreSQL y API.
-- Sembrar secuencia inicial con el siguiente correlativo libre validado.
-- Entregar endpoint al programador para integrar `CorrelativoClient`.
+| Equipo | Rango reservado |
+|---|---:|
+| PC-STANLEY | 2620903000-2620903099 |
+| PC-ANDREA | 2620903100-2620903199 |
 
-## 14. Fuentes consultadas
+Reglas:
+
+1. Los rangos deben ser asignados por el servidor, no manualmente.
+2. Cada PC debe reportar consumo del rango cuando recupere conexión.
+3. El servidor debe impedir solapamientos.
+4. El rango debe tener tamaño limitado para reducir impacto si una PC se daña.
+
+## 10. Plan de implementación para el programador
+
+### Fase 1.1 - Provisionamiento
+
+1. Crear VPS.
+2. Instalar Ubuntu LTS o Debian stable.
+3. Configurar usuario administrativo sin acceso root por contraseña.
+4. Activar firewall: permitir solo SSH, HTTP y HTTPS.
+5. Instalar PostgreSQL.
+6. Configurar backups del proveedor.
+
+### Fase 1.2 - API
+
+1. Crear endpoint `POST /api/correlativos/ot/reservar`.
+2. Implementar autenticación por token/JWT.
+3. Implementar idempotencia.
+4. Implementar bitácora.
+5. Exponer HTTPS con certificado válido.
+
+### Fase 1.3 - Integración local
+
+1. Preparar `CorrelativoClient` en el programa local.
+2. Mantener fallback controlado, no silencioso.
+3. Registrar errores de conexión.
+4. No tocar generación XML/PDF hasta aprobar pruebas.
+
+### Fase 1.4 - Prueba de aceptación
+
+1. Tres PC solicitan número al mismo tiempo.
+2. Deben recibirse tres números diferentes.
+3. Se simula timeout y reintento con la misma `idempotency_key`.
+4. El servidor debe devolver el mismo correlativo reservado, no crear otro.
+5. Se corta Internet en una PC y se valida procedimiento de contingencia.
+6. Se revisa bitácora y respaldo.
+
+## 11. Entregables esperados
+
+1. VPS configurado.
+2. Repositorio o carpeta de código del endpoint.
+3. Script SQL de base de datos.
+4. Archivo `.env.example` sin secretos reales.
+5. Manual de despliegue.
+6. Manual de reversa.
+7. Evidencia de prueba de concurrencia.
+8. Evidencia de backup activo.
+
+## 12. Decisión recomendada
+
+Para avanzar con datos verificables, la opción recomendada es iniciar con DigitalOcean Basic 2 vCPU / 4 GiB por USD 24/mes, con backup semanal del 20%, para un estimado técnico de USD 28.80/mes antes de dominio e impuestos.
+
+Si se prefiere validar costo mínimo, iniciar piloto con DigitalOcean Basic 1 vCPU / 2 GiB por USD 12/mes, backup semanal de USD 2.40, total técnico estimado de USD 14.40/mes antes de dominio e impuestos.
+
+No se recomienda contratar un proveedor no verificado hasta confirmar manualmente precio, región, backup y método de pago.
+
+## 13. Fuentes consultadas
 
 - DigitalOcean Droplet Pricing: https://www.digitalocean.com/pricing/droplets
-- Google Workspace Pricing: https://workspace.google.com/pricing.html
-- Vultr Pricing: https://www.vultr.com/pricing/ - pendiente de reconfirmacion directa por error de acceso al consultar.
+- Vultr Pricing: https://www.vultr.com/pricing/ - pendiente de reconfirmación directa por bloqueo/error de acceso al consultar.
